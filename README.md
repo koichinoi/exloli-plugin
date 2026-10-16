@@ -30,14 +30,14 @@
 #### 1. 克隆仓库
 
 ```
-git clone https://github.com/erzaozi/exloli-plugin.git ./plugins/exloli-plugin
+git clone https://github.com/koichinoi/exloli-plugin.git ./plugins/exloli-plugin
 ```
 
 > [!NOTE]
 > 如果你的网络环境较差，无法连接到 Github，可以使用 [GitHub Proxy](https://mirror.ghproxy.com/) 提供的文件代理加速下载服务
 >
 > ```
-> git clone https://mirror.ghproxy.com/https://github.com/erzaozi/exloli-plugin.git ./plugins/exloli-plugin
+> git clone https://mirror.ghproxy.com/https://github.com/koichinoi/exloli-plugin.git ./plugins/exloli-plugin
 > ```
 
 #### 2. 安装依赖
@@ -64,6 +64,12 @@ pnpm install --filter=exloli-plugin
 
 请使用 `#exloli帮助` 获取完整帮助
 
+搜索指令（仅机器人主人可用）：
+
+- `#exloli搜索`：按提示依次输入关键词、分类、星级和站点。
+- `#exloli搜索 关键词`：直接填写关键词，随后从分类选择开始；多个关键词可用中文或英文逗号分隔。
+- 例如 `#exloli搜索 1` 会把 `1` 作为关键词，然后提示选择分类。
+
 - [x] 实时推送更新
 - [x] 自定义自动推送漫画标签
 - [x] 自定义自动推送搜索内容
@@ -72,6 +78,8 @@ pnpm install --filter=exloli-plugin
 - [x] 漫画本地存储
 
 ## 常见问题
+
+如果发送 `#exloli搜索 1` 后日志只显示 `ExLoli-安全验证(checkProtocol)` 的“开始处理”，原版的搜索规则只匹配不带参数的 `#exloli搜索`，安全验证放行后没有搜索规则接手。这并不一定是安全验证卡住。本分支已支持附带关键词；更新前可先单独发送 `#exloli搜索`，再回复关键词。如果机器人提示尚未同意使用须知，请先阅读 [DISCLAIMER](./DISCLAIMER.md) 并按指引由主人确认。
 
 1. 为什么我使用推送命令后没有收到推送？
    - 发送推送仅推送至所有开启了推送配置的群以及私聊。

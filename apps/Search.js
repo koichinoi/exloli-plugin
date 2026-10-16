@@ -5,6 +5,13 @@ import { CATEGORY } from '../components/Core.js';
 const USER_SEARCH_PARAM_KEY = 'Yz:Exloli-plugin:search:';
 const NOT_MASTER_REPLY = '臭萝莉控滚开啊！变态！！';
 const SEARCH_TIMEOUT = 60;
+const CATEGORY_PROMPT = "请输入你要搜索的漫画类型\n1.全选可回复“全选”\n2.采用默认设置可回复“默认”\n3.如需要特定词条请回复数字序号并用“,”分隔\n\n1.同人 2.漫画 3.美术CG\n4.游戏CG 5.欧美 6.无H\n7.图集 8.Coser 9.亚洲\n10.杂项";
+
+function parseSearchTerms(message) {
+    if (message.includes("默认")) return [];
+    if (message.includes("无")) return [''];
+    return message.split(/[，,]/);
+}
 
 export class Search extends plugin {
     constructor() {
@@ -14,7 +21,7 @@ export class Search extends plugin {
             event: 'message',
             priority: 1009,
             rule: [{
-                reg: '^#?exloli搜索$',
+                reg: '^#?exloli搜索[\\s\\S]*$',
                 fnc: 'search'
             }, {
                 reg: '^#?exloli(上|下|第|最后)一页$',
@@ -29,10 +36,14 @@ export class Search extends plugin {
             return true;
         }
         const userId = e.user_id;
-        const defaultParam = { step: 0 };
+        const keywords = e.msg.replace(/^#?exloli搜索/, '').trim();
+        const defaultParam = keywords
+            ? { step: 1, search_param: parseSearchTerms(keywords) }
+            : { step: 0 };
         await redis.set(USER_SEARCH_PARAM_KEY + userId, JSON.stringify(defaultParam), { EX: SEARCH_TIMEOUT });
-        e.reply("请输入你要搜索的词条，并用“,”分隔\n1.如不需要请填“无”,\n2.采用默认设置可回复“默认”");
         this.setContext("getInfo", e.isGroup, SEARCH_TIMEOUT, "操作已超时，请重新发送指令");
+        await e.reply(keywords ? CATEGORY_PROMPT : "请输入你要搜索的词条，并用“,”分隔\n1.如不需要请填“无”,\n2.采用默认设置可回复“默认”");
+        return true;
     }
 
     async changePage(e) {
@@ -86,17 +97,10 @@ export class Search extends plugin {
 
         switch (userParam.step) {
             case 0:
-                if (this.e.msg.includes("默认")) {
-                    userParam.search_param = [];
-                } else if (this.e.msg.includes("无")) {
-                    userParam.search_param = [''];
-                } else {
-                    userParam.search_param = this.e.msg.split(/[，,]/);
-                }
+                userParam.search_param = parseSearchTerms(this.e.msg);
                 userParam.step = 1;
                 await redis.set(paramKey, JSON.stringify(userParam), { EX: SEARCH_TIMEOUT });
-                await this.e.reply("请输入你要搜索的漫画类型\n1.全选可回复“全选”\n2.采用默认设置可回复“默认”\n3.如需要特定词条请回复数字序号并用“,”分隔\n\n\
-1.同人 2.漫画 3.美术CG\n4.游戏CG 5.欧美 6.无H\n7.图集 8.Coser 9.亚洲\n10.杂项");
+                await this.e.reply(CATEGORY_PROMPT);
                 break;
             case 1:
                 if (this.e.msg.includes("默认")) {
